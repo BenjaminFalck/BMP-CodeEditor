@@ -1,21 +1,14 @@
-#Compailattu ohjelma nimi:
-bmp-editor
-
-#objekti-tiedostot:
 *.o
+*.tmp
+/build/
 
-#nanon tiedostot:
+#nano
 *~
 
-#vimmin tiedostot:
+#vim
 *.swp
 *.swo
 
-#Joku MacOS-homma varuiksi:
+#MacOS
 .DS_Store
 
-#temp filut
-*.tmp
-
-#mahdollinen build dir
-/build/
