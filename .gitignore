@@ -1,5 +1,6 @@
 *.o
 *.tmp
+Makefile
 /build/
 
 #nano

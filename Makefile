@@ -1,2 +1,2 @@
-build/bmp-editor: bmp-editor.c
-	$(CC) bmp-editor.c -o build/bmp-editor -Wall -Wextra -pedantic -std=c99
+build/BMP-CodeEditor: BMP-CodeEditor.c
+	$(CC) BMP-CodeEditor.c -o build/BMP-CodeEditor -Wall -Wextra -pedantic -std=c99
