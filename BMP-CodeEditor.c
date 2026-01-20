@@ -7,13 +7,26 @@
 #include <unistd.h>
 #include <string.h>
 
+/*  k stands for 'key' but the name doesnt matter. could be anything. 
+    And 0x1f is 00011111 in binary. it turns first 3 bits to zeros.
+    For example C (01000011) becomes 00000011 via biteise AND operation
+    because with AND only bitd that are both 1 remain 1. 
+    In other owrds:
+        01000011
+    AND 00011111
+       ---------
+      = 00000011
+*/
 #define CTRL_KEY(k)  ((k) & 0x1f)
+
 #define BMPCODEEDITOR_VERSION "0.0.1"
 
 enum editorKey {
+    /*Since first one is assigned to 1000, the others below it auto assign as
+      1001, 1002, 1003, etc in C*/
     ARROW_LEFT = 1000,
-    ARROW_RIGHT,
-    ARROW_UP,
+    ARROW_RIGHT, 0 // = 1001
+    ARROW_UP, // = 1002
     ARROW_DOWN,
     PAGE_UP,
     PAGE_DOWN, 
@@ -66,16 +79,23 @@ int editorReadKey()
     int nread;
     char c;
     /*check stdinput (usually keyboard) while output != success (1)*/
-    while ((nread = read(STDIN_FILENO, &c, 1)) != 1) 
+    while ((nread = read(STDIN_FILENO, &c, 1)) != 1)
     {
         /*if error (-1) && error != try again*/
         if (nread ==-1 && errno != EAGAIN) die("read");
     }
+    /*Check if c = ESC or ANSI Escape Code*/
     if (c == '\x1b')
     {
+        /*How many bytes (3) stored*/
         char seq[3];
+        /*Expected:  seq[0] = '[',  seq[1] = some number,  seq[2] = '~' */
+
+        /*if read(input, store in seq[0], 1byte) returns NOT ERROR (-1), retrn ESC key*/
+        /*So these 2 lines are failsafe: if something goes wrong, return ESC*/
         if (read(STDIN_FILENO, &seq[0], 1) != 1) return '\x1b';
         if (read(STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
+
         if (seq[0] == '[')
         {
             if (seq[1] >= '0' && seq[1] <= '9')
@@ -108,6 +128,8 @@ int editorReadKey()
                 }
             }
         }
+        /*The 0-form (letter O not zero) of these ansi sequences wokr on modern
+          terminals only*/
         else if (seq[0] == 'O')
         {
             switch (seq[1])
@@ -116,8 +138,10 @@ int editorReadKey()
                 case 'F': return END_KEY;
             }
         }
+        /* return ESC Key if none of the above*/
         return '\x1b';
     }
+    /*if c was NOT ESC, then return c (could be norm char)*/
     else
     {
         return c;
