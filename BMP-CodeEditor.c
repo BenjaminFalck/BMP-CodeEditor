@@ -65,8 +65,10 @@ int editorReadKey()
 {
     int nread;
     char c;
-    while ((nread = read(STDIN_FILENO, &c, 1)) != 1)
+    /*check stdinput (usually keyboard) while output != success (1)*/
+    while ((nread = read(STDIN_FILENO, &c, 1)) != 1) 
     {
+        /*if error (-1) && error != try again*/
         if (nread ==-1 && errno != EAGAIN) die("read");
     }
     if (c == '\x1b')
@@ -241,6 +243,7 @@ void editorMoveCursor(int key) {
 }
 
 void editorProcessKeypress() {
+   /*value of editorReadKey() to new var C so it can be compared with switch case*/
     int c = editorReadKey();
     switch (c) {
         case CTRL_KEY('q'):
