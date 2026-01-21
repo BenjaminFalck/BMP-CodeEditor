@@ -7,6 +7,9 @@
 #include <unistd.h>
 #include <string.h>
 
+/* REMEMBER!! THERE IS NO STRING TYPE IN C!
+   ITS ALWAYS ARRAY OF CHARS WITH '\0' (null terminator) AT THE END  */
+
 /*  k stands for 'key' but the name doesnt matter. could be anything. 
     And 0x1f is 00011111 in binary. it turns first 3 bits to zeros.
     For example C (01000011) becomes 00000011 via biteise AND operation
@@ -25,7 +28,7 @@ enum editorKey {
     /*Since first one is assigned to 1000, the others below it auto assign as
       1001, 1002, 1003, etc in C*/
     ARROW_LEFT = 1000,
-    ARROW_RIGHT, 0 // = 1001
+    ARROW_RIGHT,  // = 1001
     ARROW_UP, // = 1002
     ARROW_DOWN,
     PAGE_UP,
@@ -45,21 +48,30 @@ struct editorConfig {
 struct editorConfig E;
 
 /************************************** TERMINAL **************************************/
+void die(const char *s) {//check down for explanation for s
 
-void die(const char *s) {
-    write(STDOUT_FILENO, "\x1b[2J", 4);
-    write(STDOUT_FILENO, "\x1b[H", 3);
+    /*write(fd, buffer, length) ...
+      fd     = file descriptor (address where to send)
+      buffer = pointer to stuff (bytes) to write
+      length = how many bytes sending */
+    write(STDOUT_FILENO, "\x1b[2J", 4); //ansi code for "clear screen"
+    write(STDOUT_FILENO, "\x1b[H", 3); //ansi code for "move cursor to top left"
 
-    perror(s);
+/*  So remember this: 's' is the name of the function/operation that failed.
+    And perror(s) prints the error message that it gets from errno... So,
+    it prints out like this: "(errorname): (error code/num from errno)       */
+    perror(s); 
     exit(1);
 }
 
 void disableRawMode() {
+    /*tcsetattr = terminal control set attributes*/
     if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.orig_termios) == -1)
         die("tcsetattr");
 }
 
 void enableRawMode() {
+    /*tcgetattr = terminal control get attributes*/
     if (tcgetattr(STDIN_FILENO, &E.orig_termios) == -1) die("tcgetattr");
     atexit(disableRawMode);
 
@@ -152,6 +164,8 @@ int getCursorPosition(int *rows, int *cols) {
     char buf[32];
     unsigned int i = 0;
 
+    /* So the error check here is != 4 this time because the buffer size is
+       4 bytes (...as in 4 bytes checked successfully)   */
     if (write(STDOUT_FILENO, "\x1b[6n", 4) != 4) return -1;
 
     while (i < sizeof(buf) - 1) {
